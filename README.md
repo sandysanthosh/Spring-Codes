@@ -2,6 +2,8 @@
 
 ### Web.xml:
 
+https://www.journaldev.com/2736/spring-security-example-userdetailsservice
+
 ```
 
 <?xml version="1.0" encoding="UTF-8"?>
