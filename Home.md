@@ -442,6 +442,31 @@ public class HomeController {
 
 ```
 
+### Security check list:
+
+
+**accessDecisionManager **bean is defined so that we can have our custom roles, by default all the roles should start with ROLE_ and we are overriding this setting in the **roleVoter **bean property **rolePrefix**.
+
+We can have multiple authentication managers defined in the spring security configuration. I have defined **in-memory-auth** for in-memory authentication, **dao-auth** for UserDetailsService DAO implementation and **jdbc-auth** for JDBC authentication. For JDBC authentication, I have provided configuration for DataSource defined in the application as well as if we want to use JNDI resource defined in the servlet container.
+
+http **authentication-manager-ref** is used to define the authentication manager that will be used for authenticating the user. Currently it’s configured to use the JDBC based authentication.
+
+http **access-decision-manager-ref** is used to specifying the ID of the AccessDecisionManager implementation which should be used for authorizing HTTP requests.
+
+**intercept-url** is used to define the URL pattern and authorities of the user who can access this page. For example, we have defined that URI “/emp/**” can be accessible only by users having “Admin” access.
+
+**form-login** defines the login form configuration and we can provide the username and password parameter names. authentication-failure-url is used to define the URL for the authentication failure page. If no login **failure URL** is specified, Spring Security will automatically create a failure login URL at /spring_security_login?login_error and a corresponding filter to render that login failure URL when requested.
+
+**default-target-url** is used to define the default URL that will be redirected to after successful authentication, if the user’s previous action could not be resumed. This generally happens if the user visits a login page without having first requested a secured operation that triggers authentication. If unspecified, it defaults to the root of the application.
+
+logout is used to define the logout processing filter. Here we are invalidating the session and sending the user to login page after successful logout. **logout-url** is used to define the URL to be used for logout action.
+
+**access-denied-handler** defines the global error page if the user is denied the access, because he is not authorized to perform the specified action.
+
+**session-management** will add a  SessionManagementFilter filter to the filter stack for Session Management.
+
+
+
 ### Pom.xml:
 
 ```
