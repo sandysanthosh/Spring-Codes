@@ -1,3 +1,17 @@
+### JSR 303:
+
+	* @Size
+	* @NotEmpty
+	* @DateTimeFormat(pattern="MM/dd/yyyy")
+	* @Phone
+
+
+### Controller:
+
+	* @Valid 
+	* @BindingResult 
+	* InitBinder
+	* springForm:errors
 
 
 ### POJO:
@@ -117,5 +131,231 @@ public class PhoneValidator implements ConstraintValidator<Phone, String> {
 	}
   
 ```
+
+### CustomerController .java:
+
+```
+
+
+package com.journaldev.spring.form.controllers;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.journaldev.spring.form.model.Customer;
+
+@Controller
+public class CustomerController {
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(CustomerController.class);
+	
+	private Map<String, Customer> customers = null;
+	
+	public CustomerController(){
+		customers = new HashMap<String, Customer>();
+	}
+
+	@RequestMapping(value = "/cust/save", method = RequestMethod.GET)
+	public String saveCustomerPage(Model model) {
+		logger.info("Returning custSave.jsp page");
+		model.addAttribute("customer", new Customer());
+		return "custSave";
+	}
+
+	@RequestMapping(value = "/cust/save.do", method = RequestMethod.POST)
+	public String saveCustomerAction(
+			@Valid Customer customer,
+			BindingResult bindingResult, Model model) {
+		if (bindingResult.hasErrors()) {
+			logger.info("Returning custSave.jsp page");
+			return "custSave";
+		}
+		logger.info("Returning custSaveSuccess.jsp page");
+		model.addAttribute("customer", customer);
+		customers.put(customer.getEmail(), customer);
+		return "custSaveSuccess";
+	}
+
+}
+
+```
+
+### message_en.properties file:
+
+```
+
+
+#application defined error messsages
+id.required=Employee ID is required
+name.required=Employee Name is required
+role.required=Employee Role is required
+negativeValue={0} can't be negative or zero
+
+#Spring framework error messages to be used when conversion from form data to bean fails
+typeMismatch.int={0} Value must be an integer
+typeMismatch.java.lang.Integer={0} must be an integer
+typeMismatch={0} is of invalid format
+
+#application messages for annotations, {ValidationClass}.{modelObjectName}.{field}
+#the {0} is field name, other fields are in alphabatical order, max and then min  
+Size.customer.name=Customer {0} should be between {2} and {1} characters long
+NotEmpty.customer.email=Email is a required field
+NotNull.customer.age=Customer {0} should be in years
+
+#Generic annotation class messages
+Email=Email address is not valid
+NotNull=This is a required field
+NotEmpty=This is a required field
+Past=Date should be Past
+
+#Custom validation annotation
+Phone=Invalid format, valid formats are 1234567890, 123-456-7890 x1234
+
+```
+
+
+### CustSave.Jsp
+
+
+```
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "https://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib uri="https://www.springframework.org/tags/form"
+	prefix="springForm"%>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Customer Save Page</title>
+<style>
+.error {
+	color: #ff0000;
+	font-style: italic;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+	<springForm:form method="POST" commandName="customer"
+		action="save.do">
+		<table>
+			<tr>
+				<td>Name:</td>
+				<td><springForm:input path="name" /></td>
+				<td><springForm:errors path="name" cssClass="error" /></td>
+			</tr>
+			<tr>
+				<td>Email:</td>
+				<td><springForm:input path="email" /></td>
+				<td><springForm:errors path="email" cssClass="error" /></td>
+			</tr>
+			<tr>
+				<td>Age:</td>
+				<td><springForm:input path="age" /></td>
+				<td><springForm:errors path="age" cssClass="error" /></td>
+			</tr>
+			<tr>
+				<td>Gender:</td>
+				<td><springForm:select path="gender">
+						<springForm:option value="" label="Select Gender" />
+						<springForm:option value="MALE" label="Male" />
+						<springForm:option value="FEMALE" label="Female" />
+					</springForm:select></td>
+				<td><springForm:errors path="gender" cssClass="error" /></td>
+			</tr>
+			<tr>
+				<td>Birthday:</td>
+				<td><springForm:input path="birthday" placeholder="MM/dd/yyyy"/></td>
+				<td><springForm:errors path="birthday" cssClass="error" /></td>
+			</tr>
+			<tr>
+				<td>Phone:</td>
+				<td><springForm:input path="phone" /></td>
+				<td><springForm:errors path="phone" cssClass="error" /></td>
+			</tr>
+			<tr>
+				<td colspan="3"><input type="submit" value="Save Customer"></td>
+			</tr>
+		</table>
+
+	</springForm:form>
+
+</body>
+</html>
+
+```
+
+### custSaveSuccess
+
+```
+
+<%@ taglib uri="https://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="https://java.sun.com/jsp/jstl/fmt" %>
+
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Customer Saved Successfully</title>
+</head>
+<body>
+<h3>
+	Customer Saved Successfully.
+</h3>
+
+<strong>Customer Name:${customer.name}</strong><br>
+<strong>Customer Email:${customer.email}</strong><br>
+<strong>Customer Age:${customer.age}</strong><br>
+<strong>Customer Gender:${customer.gender}</strong><br>
+<strong>Customer Birthday:<fmt:formatDate value="${customer.birthday}" type="date" /></strong><br>
+
+</body>
+</html>
+
+
+```
+
+
+### empSaveSuccess.jsp:
+
+```
+
+<%@ taglib uri="https://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Employee Saved Successfully</title>
+</head>
+<body>
+<h3>
+	Employee Saved Successfully.
+</h3>
+
+<strong>Employee ID:${emp.id}</strong><br>
+<strong>Employee Name:${emp.name}</strong><br>
+<strong>Employee Role:${emp.role}</strong><br>
+
+</body>
+</html>
+
+
+```
+
+
+
+
+
 
 
